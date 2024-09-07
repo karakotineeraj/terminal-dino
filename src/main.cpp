@@ -27,8 +27,11 @@ struct Cactus {
 int main(int argc, char *argv[]) {
 	srand(time(NULL));
 	initscr();
+
 	WINDOW *main_wnd = newwin(24, 80, 0, 0);
+
 	struct Player player = { .pos = { .x =  6, .y =  22 } , .disPlayer =  'O' };
+
 	std::deque<Cactus> obstacles;
 	std::deque<BackgroundObjects> background;
 
@@ -42,7 +45,10 @@ int main(int argc, char *argv[]) {
 	wrefresh(main_wnd);
 
 	// Draw the player
+	wattron(main_wnd, A_BOLD);
 	mvwaddch(main_wnd, player.pos.y, player.pos.x, 'O');
+	wattroff(main_wnd, A_BOLD);
+
 	wrefresh(main_wnd);
 
 	int ch, move_up = 0;
@@ -66,13 +72,19 @@ int main(int argc, char *argv[]) {
 
 		if (tick % 2 == 0) {
 			if (obstacles.size() > 0 && obstacles[0].pos.x == 2) {
+				for (int j = 0; j < obstacles[0].size; ++j) {
+					mvwaddch(main_wnd, obstacles[0].pos.y - j, obstacles[0].pos.x, ' ');
+				}
+
 				obstacles.pop_front();
 			}
 
 			for (int i = 0; i < obstacles.size(); ++i) {
 				for (int j = 0; j < obstacles[i].size; ++j) {
 					mvwaddch(main_wnd, obstacles[i].pos.y - j, obstacles[i].pos.x, ' ');
+					wattron(main_wnd, A_BOLD);
 					mvwaddch(main_wnd, obstacles[i].pos.y - j, obstacles[i].pos.x - 1, '|');
+					wattroff(main_wnd, A_BOLD);
 				}
 
 				obstacles[i].pos.x--;
@@ -80,11 +92,15 @@ int main(int argc, char *argv[]) {
 
 			if (move_up) {
 				mvwaddch(main_wnd, player.pos.y, player.pos.x, ' ');
+				wattron(main_wnd, A_BOLD);
 				mvwaddch(main_wnd, --player.pos.y, player.pos.x, player.disPlayer);
+				wattroff(main_wnd, A_BOLD);
 				move_up--;
 			} else if (player.pos.y < 22) {
 				mvwaddch(main_wnd, player.pos.y, player.pos.x, ' ');
+				wattron(main_wnd, A_BOLD);
 				mvwaddch(main_wnd, ++player.pos.y, player.pos.x, player.disPlayer);
+				wattroff(main_wnd, A_BOLD);
 			}
 
 			for (int i = 0; i < obstacles.size(); ++i) {
@@ -98,7 +114,9 @@ int main(int argc, char *argv[]) {
 				obstacles.push_back({ .pos = { .x = 78, .y = 22 }, .size = static_cast<uint_fast8_t>(rand() % 3 + 1) });
 
 				for (int j = 0; j < obstacles[obstacles.size() - 1].size; ++j) {
+					wattron(main_wnd, A_BOLD);
 					mvwaddch(main_wnd, obstacles[obstacles.size() - 1].pos.y - j, obstacles[obstacles.size() - 1].pos.x, '|');
+					wattroff(main_wnd, A_BOLD);
 				}
 
 				wait_time = rand() % 15 + 10;
