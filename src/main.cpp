@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
@@ -39,6 +40,14 @@ int main(int argc, char *argv[]) {
 	noecho();
 	nodelay(stdscr, true);
 	curs_set(0); // Set cursor to Invisible
+	
+	if(!has_colors()) {
+		endwin();
+		printf("Your terminal doesn't support colors");
+		exit(1);
+	}
+
+	start_color();
 	refresh();
 
 	box(main_wnd, 0, 0);
@@ -49,6 +58,8 @@ int main(int argc, char *argv[]) {
 	mvwaddch(main_wnd, player.pos.y, player.pos.x, 'O');
 	wattroff(main_wnd, A_BOLD);
 
+	init_pair(1, COLOR_WHITE, COLOR_BLACK);
+	init_pair(2, COLOR_YELLOW, COLOR_BLACK);
 	wrefresh(main_wnd);
 
 	int ch, move_up = 0;
@@ -70,6 +81,25 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 
+		int vertical = std::rand() % 18  + 1;
+		background.push_back({ .pos = { .x = 78, .y = vertical }, .disBackground = '.' });
+
+		if (background.size() > 0 && background[0].pos.x == 2) {
+				mvwaddch(main_wnd, background[0].pos.y, background[0].pos.x, ' ');
+
+			background.pop_front();
+		}
+
+		for (int i = 0; i < background.size(); ++i) {
+			mvwaddch(main_wnd, background[i].pos.y, background[i].pos.x, ' ');
+
+			wattron(main_wnd, COLOR_PAIR(1));
+			mvwaddch(main_wnd, background[i].pos.y, background[i].pos.x - 1, background[i].disBackground);
+			wattroff(main_wnd, COLOR_PAIR(1));
+
+			background[i].pos.x--;
+		}
+
 		if (tick % 2 == 0) {
 			if (obstacles.size() > 0 && obstacles[0].pos.x == 2) {
 				for (int j = 0; j < obstacles[0].size; ++j) {
@@ -83,7 +113,9 @@ int main(int argc, char *argv[]) {
 				for (int j = 0; j < obstacles[i].size; ++j) {
 					mvwaddch(main_wnd, obstacles[i].pos.y - j, obstacles[i].pos.x, ' ');
 					wattron(main_wnd, A_BOLD);
+					wattron(main_wnd, COLOR_PAIR(2));
 					mvwaddch(main_wnd, obstacles[i].pos.y - j, obstacles[i].pos.x - 1, '|');
+					wattroff(main_wnd, COLOR_PAIR(2));
 					wattroff(main_wnd, A_BOLD);
 				}
 
