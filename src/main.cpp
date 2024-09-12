@@ -12,7 +12,7 @@ struct Position {
 
 struct Player {
 	struct Position pos;
-	char disPlayer;
+	unsigned int disPlayer;
 };
 
 struct BackgroundObjects {
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
 	WINDOW *main_wnd = newwin(24, 80, 0, 0);
 
-	struct Player player = { .pos = { .x =  6, .y =  22 } , .disPlayer =  'O' };
+	struct Player player = { .pos = { .x =  6, .y =  22 } , .disPlayer = ACS_UARROW };
 
 	std::deque<Cactus> obstacles;
 	std::deque<BackgroundObjects> background;
@@ -50,16 +50,20 @@ int main(int argc, char *argv[]) {
 	start_color();
 	refresh();
 
+	keypad(stdscr, true); // Enable special keys
 	box(main_wnd, 0, 0);
 	wrefresh(main_wnd);
 
 	// Draw the player
 	wattron(main_wnd, A_BOLD);
-	mvwaddch(main_wnd, player.pos.y, player.pos.x, 'O');
+	wattron(main_wnd, COLOR_PAIR(3));
+	mvwaddch(main_wnd, player.pos.y, player.pos.x, player.disPlayer);
+	wattroff(main_wnd, COLOR_PAIR(3));
 	wattroff(main_wnd, A_BOLD);
 
 	init_pair(1, COLOR_WHITE, COLOR_BLACK);
 	init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(3, COLOR_RED, COLOR_BLACK);
 	wrefresh(main_wnd);
 
 	int ch, move_up = 0;
@@ -74,10 +78,10 @@ int main(int argc, char *argv[]) {
 			case 'q':
 				end_program = true;
 				break;
+			case KEY_UP:
 			case 'w':
 			case 'i':
-			case KEY_UP:
-				move_up = 3;
+				move_up = 4;
 				break;
 		}
 
@@ -125,13 +129,17 @@ int main(int argc, char *argv[]) {
 			if (move_up) {
 				mvwaddch(main_wnd, player.pos.y, player.pos.x, ' ');
 				wattron(main_wnd, A_BOLD);
+				wattron(main_wnd, COLOR_PAIR(3));
 				mvwaddch(main_wnd, --player.pos.y, player.pos.x, player.disPlayer);
+				wattroff(main_wnd, COLOR_PAIR(3));
 				wattroff(main_wnd, A_BOLD);
 				move_up--;
 			} else if (player.pos.y < 22) {
 				mvwaddch(main_wnd, player.pos.y, player.pos.x, ' ');
 				wattron(main_wnd, A_BOLD);
+				wattron(main_wnd, COLOR_PAIR(3));
 				mvwaddch(main_wnd, ++player.pos.y, player.pos.x, player.disPlayer);
+				wattroff(main_wnd, COLOR_PAIR(3));
 				wattroff(main_wnd, A_BOLD);
 			}
 
